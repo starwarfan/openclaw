@@ -3,7 +3,9 @@ import type { OpenClawConfig } from "../config/config.js";
 import type { ToolLoopDetectionConfig } from "../config/types.tools.js";
 import { resolveMergedSafeBinProfileFixtures } from "../infra/exec-safe-bin-runtime-policy.js";
 import { logWarn } from "../logger.js";
+import { getGlobalHookRunner } from "../plugins/hook-runner-global.js";
 import { getPluginToolMeta } from "../plugins/tools.js";
+import type { PluginHookBeforeToolsResolveContext } from "../plugins/types.js";
 import { isSubagentSessionKey } from "../routing/session-key.js";
 import { resolveGatewayMessageChannel } from "../utils/message-channel.js";
 import { resolveAgentConfig } from "./agent-scope.js";
@@ -55,6 +57,7 @@ import {
   applyOwnerOnlyToolPolicy,
   collectExplicitAllowlist,
   mergeAlsoAllowPolicy,
+  normalizeToolName,
   resolveToolProfilePolicy,
 } from "./tool-policy.js";
 import { resolveWorkspaceRoot } from "./workspace-dir.js";
@@ -610,4 +613,43 @@ export function createOpenClawCodingTools(options?: {
   // pi-ai's Anthropic OAuth transport remaps tool names to Claude Code-style names
   // on the wire and maps them back for tool dispatch.
   return withAbort;
+}
+
+/**
+ * Apply the before_tools_resolve plugin hook to filter tools based on caller
+ * identity. Call this after createOpenClawCodingTools() in async contexts.
+ * Returns the filtered tool list unchanged if no hooks are registered.
+ */
+export async function applyBeforeToolsResolveHook(
+  tools: AnyAgentTool[],
+  ctx: PluginHookBeforeToolsResolveContext,
+): Promise<AnyAgentTool[]> {
+  const hookRunner = getGlobalHookRunner();
+  if (!hookRunner?.hasHooks("before_tools_resolve")) {
+    return tools;
+  }
+
+  const toolNames = tools.map((t) => normalizeToolName(t.name));
+  const result = await hookRunner.runBeforeToolsResolve({ toolNames }, ctx);
+  if (!result) {
+    return tools;
+  }
+
+  const denySet = result.deny?.length
+    ? new Set(result.deny.map((n) => normalizeToolName(n)))
+    : undefined;
+  const allowSet = result.allow?.length
+    ? new Set(result.allow.map((n) => normalizeToolName(n)))
+    : undefined;
+
+  return tools.filter((tool) => {
+    const name = normalizeToolName(tool.name);
+    if (denySet?.has(name)) {
+      return false;
+    }
+    if (allowSet && !allowSet.has(name)) {
+      return false;
+    }
+    return true;
+  });
 }
