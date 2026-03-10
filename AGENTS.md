@@ -293,3 +293,41 @@
   - `node --import tsx scripts/release-check.ts`
   - `pnpm release:check`
   - `pnpm test:install:smoke` or `OPENCLAW_INSTALL_SMOKE_SKIP_NONROOT=1 pnpm test:install:smoke` for non-root smoke path.
+
+## Specs Layer Constraints (SSOT)
+
+### Single Source of Truth Architecture
+
+- `specs/modules/*` is the authoritative source for contracts, DTOs, and data models
+- `specs/features/*` only describes deltas and acceptance criteria
+- Do not duplicate full contracts or DTOs in feature specs
+- Feature specs must link to module SSOT for authoritative definitions
+
+### Where to Put Things
+
+- **Contracts**: `specs/modules/<module>/contracts/`
+- **Data models**: `specs/modules/<module>/data-model.md`
+- **Feature deltas**: `specs/features/<NNN>-<slug>/`
+- **Architecture docs**: `specs/architecture/`
+- **Code style**: `specs/code-style/`
+
+### Spec-Kit Workflow
+
+Use skills in `.claude/skills/speckit-*/` for structured feature development:
+
+1. `/speckit-specify` - Create feature specification
+2. `/speckit-plan` - Generate technical design
+3. `/speckit-tasks` - Break into actionable tasks
+4. `/speckit-implement` - Execute with progress tracking
+
+### Feature Naming Convention
+
+- Feature ID: `NNN-slug` (e.g., `001-user-auth`)
+- Branch: `feature/NNN-slug` (created on demand, not required)
+- Directory: `specs/features/NNN-slug/`
+
+### SSOT References
+
+- [Specs Overview](specs/README.md)
+- [SSOT Rules for AI](specs/AGENTS.md)
+- [Module Index](specs/modules/README.md)
