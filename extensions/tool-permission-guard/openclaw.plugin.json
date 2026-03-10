@@ -1,0 +1,34 @@
+{
+  "id": "tool-permission-guard",
+  "name": "Tool Permission Guard",
+  "description": "Sample plugin demonstrating before_tool_call and before_tools_resolve hooks for identity-based tool access control.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "nonOwnerDenyTools": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Tool names to deny for non-owner senders."
+      },
+      "channelAllowMap": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": "Per-channel tool allowlist. Keys are channel IDs, values are arrays of allowed tool names."
+      }
+    }
+  },
+  "uiHints": {
+    "nonOwnerDenyTools": {
+      "label": "Non-owner denied tools",
+      "help": "Tool names that non-owner senders cannot use (e.g. exec, gateway)"
+    },
+    "channelAllowMap": {
+      "label": "Per-channel tool allowlist",
+      "help": "Map of channel ID to allowed tool names. If set, only these tools are available on that channel."
+    }
+  }
+}
