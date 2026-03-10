@@ -13,6 +13,14 @@ export type HookContext = {
   sessionId?: string;
   runId?: string;
   loopDetection?: ToolLoopDetectionConfig;
+  /** Sender identifier from the inbound message that triggered this agent run. */
+  requesterSenderId?: string;
+  /** Whether the sender is an owner (on the config allowlist). */
+  senderIsOwner?: boolean;
+  /** Channel identifier (e.g. "telegram", "discord", "whatsapp"). */
+  channelId?: string;
+  /** Message provider / transport used for this agent run. */
+  messageProvider?: string;
 };
 
 type HookOutcome = { blocked: true; reason: string } | { blocked: false; params: unknown };
@@ -161,6 +169,10 @@ export async function runBeforeToolCallHook(args: {
       ...(args.ctx?.sessionId ? { sessionId: args.ctx.sessionId } : {}),
       ...(args.ctx?.runId ? { runId: args.ctx.runId } : {}),
       ...(args.toolCallId ? { toolCallId: args.toolCallId } : {}),
+      ...(args.ctx?.requesterSenderId ? { requesterSenderId: args.ctx.requesterSenderId } : {}),
+      ...(args.ctx?.senderIsOwner != null ? { senderIsOwner: args.ctx.senderIsOwner } : {}),
+      ...(args.ctx?.channelId ? { channelId: args.ctx.channelId } : {}),
+      ...(args.ctx?.messageProvider ? { messageProvider: args.ctx.messageProvider } : {}),
     };
     const hookResult = await hookRunner.runBeforeToolCall(
       {

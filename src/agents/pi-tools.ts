@@ -596,6 +596,10 @@ export function createOpenClawCodingTools(options?: {
       sessionId: options?.sessionId,
       runId: options?.runId,
       loopDetection: resolveToolLoopDetectionConfig({ cfg: options?.config, agentId }),
+      requesterSenderId: options?.senderId ?? undefined,
+      senderIsOwner: options?.senderIsOwner,
+      channelId: options?.currentChannelId,
+      messageProvider: options?.messageProvider,
     }),
   );
   const withAbort = options?.abortSignal

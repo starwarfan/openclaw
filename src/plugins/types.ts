@@ -601,6 +601,14 @@ export type PluginHookToolContext = {
   toolName: string;
   /** Provider-specific tool call ID when available. */
   toolCallId?: string;
+  /** Sender identifier from the inbound message that triggered this agent run. */
+  requesterSenderId?: string;
+  /** Whether the sender is an owner (on the config allowlist). */
+  senderIsOwner?: boolean;
+  /** Channel identifier (e.g. "telegram", "discord", "whatsapp"). */
+  channelId?: string;
+  /** Message provider / transport used for this agent run. */
+  messageProvider?: string;
 };
 
 // before_tool_call hook
